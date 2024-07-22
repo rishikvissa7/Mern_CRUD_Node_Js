@@ -4,6 +4,7 @@ const Product = require('./models/product.model.js')
 const app = express()
 
 app.use(express.json());
+app.use(express.urlencoded({extended: false}));
 
 
 app.get('/',(req,res) => {
@@ -39,6 +40,55 @@ app.post('/api/products', async(req,res) => {
         res.status(500).json({message: error.message});
     }
 })
+
+// Update a product
+app.put('/api/product/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, price, description } = req.body;
+
+        // Check if any of the required fields are missing in the request body
+        if (!name) {
+            return res.status(400).json({ message: 'Name required' });
+        }
+
+        // Find the product by ID and update it
+        const updatedProduct = await Product.findByIdAndUpdate(id, { name, price, description }, { new: true });
+
+        // Check if the product was found and updated
+        if (!updatedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Return the updated product
+        res.status(200).json(updatedProduct);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+
+// delete 
+
+app.delete('/api/product/:id',async (req,res) => {
+    try {
+        const {id} = req.params;
+
+        await Product.findByIdAndDelete(id);
+
+        if(!product) {
+            return res.status(404).json({message: "Product not found"});
+        }
+
+        return res.status(200).json({message: "Product deleted successfully"});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+});
+
+
+
 
 mongoose.connect("mongodb+srv://rishikvissa7:admin123@backenddb.i3jxebn.mongodb.net/Node-API?retryWrites=true&w=majority&appName=BackendDB")
 .then(() => {
